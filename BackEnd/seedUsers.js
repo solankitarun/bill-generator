@@ -14,15 +14,16 @@ const seedAdminUser = async () => {
         const existingUser = await User.findOne({ username });
         
         if (existingUser) {
-            await User.updateOne({ username }, { password: hashedPassword });
-            console.log('Admin user password updated successfully.');
+            await User.updateOne({ username }, { password: hashedPassword, profiles: ['Admin', 'User'] });
+            console.log('Admin user password and profiles updated successfully.');
         } else {
             const newUser = new User({
                 username,
-                password: hashedPassword
+                password: hashedPassword,
+                profiles: ['Admin', 'User']
             });
             await newUser.save();
-            console.log('Admin user created successfully.');
+            console.log('Admin user created successfully with multiple profiles.');
         }
         process.exit(0);
     } catch (error) {

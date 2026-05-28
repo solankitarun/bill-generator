@@ -24,7 +24,7 @@ export default function Reports() {
     const [searchTerm, setSearchTerm] = useState('')
     const [currentPage, setCurrentPage] = useState(1)
 
-    const itemsPerPage = 8
+    const itemsPerPage = 5
 
     useEffect(() => {
         fetchReportData()
@@ -160,30 +160,30 @@ export default function Reports() {
                     </div>
                 </div>
 
-                <div className="flex gap-2 p-1 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl transition-colors">
+                <div className="flex w-full md:w-auto gap-1 sm:gap-2 p-1 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl transition-colors overflow-x-auto no-scrollbar">
                     <button
                         onClick={() => setReportType('transactions')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                        className={`flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-2.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
                             reportType === 'transactions' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5'
                         }`}
                     >
-                        <ClipboardList className="w-4 h-4" /> Transactions
+                        <ClipboardList className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" /> Transactions
                     </button>
                     <button
                         onClick={() => setReportType('monthly')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                        className={`flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-2.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
                             reportType === 'monthly' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5'
                         }`}
                     >
-                        <Calendar className="w-4 h-4" /> Monthly
+                        <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" /> Monthly
                     </button>
                     <button
                         onClick={() => setReportType('overdue')}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all ${
+                        className={`flex-1 md:flex-initial flex items-center justify-center gap-1.5 px-2.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
                             reportType === 'overdue' ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/30' : 'text-rose-600 dark:text-rose-500 hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-500/10 transition-colors'
                         }`}
                     >
-                        <AlertTriangle className="w-4 h-4" /> Overdue
+                        <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" /> Overdue
                     </button>
                 </div>
             </div>

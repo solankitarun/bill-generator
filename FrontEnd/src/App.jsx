@@ -1,30 +1,37 @@
-import { useState, useEffect } from 'react'
-import api from './api'
-import InputPanel from './components/InputPanel'
-import BillPreview from './components/BillPreview'
-import CustomAlert from './components/CustomAlert'
-import ShopMaster from './components/ShopMaster'
-import ItemMaster from './components/ItemMaster'
-import Dashboard from './components/Dashboard'
-import Reports from './components/Reports'
-import PaymentManager from './components/PaymentManager'
-import Login from './components/Login'
-import UserSettings from './components/UserSettings'
-import Background from './components/Background'
-import { 
-  LayoutDashboard, 
-  CreditCard, 
-  FileText, 
-  Store, 
-  Shirt, 
-  Settings, 
-  LogOut, 
-  Droplets,
-  Sun,
-  Moon
-} from 'lucide-react'
+import { useState, useEffect, useRef } from 'react';
+import api from './api';
+import InputPanel from './components/InputPanel';
+import BillPreview from './components/BillPreview';
+import CustomAlert from './components/CustomAlert';
+import ShopMaster from './components/ShopMaster';
+import ItemMaster from './components/ItemMaster';
+import Dashboard from './components/Dashboard';
+import Reports from './components/Reports';
+import PaymentManager from './components/PaymentManager';
+import Login from './components/Login';
+import UserSettings from './components/UserSettings';
+import Background from './components/Background';
+import { LayoutDashboard, CreditCard, FileText, Store, Shirt, Settings, LogOut, Droplets, Sun, Moon, BarChart3, Maximize2, Minimize2 } from 'lucide-react';
+
 
 function App() {
+    const appRef = useRef(null);
+    const [isFullScreen, setIsFullScreen] = useState(false);
+
+    const toggleFullScreen = async () => {
+      try {
+        if (!document.fullscreenElement) {
+          await appRef.current?.requestFullscreen();
+          setIsFullScreen(true);
+        } else {
+          await document.exitFullscreen();
+          setIsFullScreen(false);
+        }
+      } catch (err) {
+        console.error('Fullscreen toggle failed', err);
+      }
+    };
+
     const [activeTab, setActiveTab] = useState('payments') // Start with Dashboard
     const [shopDetails, setShopDetails] = useState(null)
     const [availableItems, setAvailableItems] = useState([])
@@ -114,8 +121,14 @@ function App() {
         setActiveTab('dashboard')
     }
 
+    const [lastAddedId, setLastAddedId] = useState(null);
+
     const addItem = (item) => {
-        setBillItems([...billItems, { ...item, id: Date.now() }])
+        const newItem = { ...item, id: Date.now() };
+        setBillItems([...billItems, newItem]);
+        setLastAddedId(newItem.id);
+        // Clear after animation duration
+        setTimeout(() => setLastAddedId(null), 1500);
     }
 
     const removeItem = (id) => {
@@ -249,7 +262,7 @@ function App() {
 
     return (
         !user ? <Login onLogin={handleLogin} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} /> :
-            <div className={`relative min-h-screen flex bg-slate-50/50 dark:bg-slate-950/50 transition-colors duration-300`}>
+            <div ref={appRef} className={`relative min-h-screen flex bg-slate-50/50 dark:bg-slate-950/50 transition-colors duration-300`}>
                 <Background isDarkMode={isDarkMode} />
 
                 <CustomAlert
@@ -277,7 +290,7 @@ function App() {
                             { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
                             { id: 'payments', label: 'Payments', icon: CreditCard },
                             { id: 'generator', label: 'Bill Generator', icon: FileText },
-                            { id: 'reports', label: 'Reports', icon: FileText },
+                            { id: 'reports', label: 'Reports', icon: BarChart3 },
                             { id: 'shop', label: 'Shop Master', icon: Store },
                             { id: 'items', label: 'Cloth Master', icon: Shirt },
                         ].map((item) => (
@@ -297,17 +310,19 @@ function App() {
                     </nav>
 
                     <div className="px-3 py-6 space-y-2 border-t border-slate-200 dark:border-white/5">
-                        <button
-                            onClick={() => setActiveTab('settings')}
-                            className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 ${
-                                activeTab === 'settings' 
-                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' 
-                                : 'text-slate-600 hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white'
-                            }`}
-                        >
-                            <Settings className="w-6 h-6" />
-                            <span className="font-medium hidden lg:block">Settings</span>
-                        </button>
+                        {user && user.selectedProfile === 'Admin' && (
+                            <button
+                                onClick={() => setActiveTab('settings')}
+                                className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 ${
+                                    activeTab === 'settings' 
+                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' 
+                                    : 'text-slate-600 hover:bg-slate-100 hover:text-indigo-600 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white'
+                                }`}
+                            >
+                                <Settings className="w-6 h-6" />
+                                <span className="font-medium hidden lg:block">Settings</span>
+                            </button>
+                        )}
                         <button
                             onClick={handleLogout}
                             className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-slate-600 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-500/10 dark:hover:text-rose-400 transition-all duration-200"
@@ -320,20 +335,21 @@ function App() {
 
                 {/* Mobile Navigation - Fixed Bottom */}
                 <nav className="fixed bottom-0 left-0 w-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-t border-slate-200 dark:border-white/5 md:hidden z-50 flex justify-around items-center px-2 py-3 print:hidden">
-                    {[
+                                        {[
                         { id: 'dashboard', icon: LayoutDashboard },
                         { id: 'payments', icon: CreditCard },
                         { id: 'generator', icon: FileText },
-                        { id: 'reports', icon: FileText },
-                        { id: 'settings', icon: Settings },
+                        { id: 'reports', icon: BarChart3 },
+                        { id: 'shop', icon: Store },
+                        ...(user && user.selectedProfile === 'Admin' ? [{ id: 'settings', icon: Settings }] : []),
                     ].map((item) => (
                         <button
                             key={item.id}
                             onClick={() => setActiveTab(item.id)}
                             className={`p-3 rounded-2xl transition-all duration-200 ${
-                                activeTab === item.id 
-                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 scale-110' 
-                                : 'text-slate-500 dark:text-slate-400'
+                                activeTab === item.id
+                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 scale-110'
+                                    : 'text-slate-500 dark:text-slate-400'
                             }`}
                         >
                             <item.icon className="w-6 h-6" />
@@ -362,6 +378,13 @@ function App() {
                                     title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                                 >
                                     {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                                </button>
+                                <button
+                                    onClick={toggleFullScreen}
+                                    className="hidden md:block p-2.5 sm:p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-white transition-all active:scale-95"
+                                    title={isFullScreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+                                >
+                                    {isFullScreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
                                 </button>
                                 <button
                                     onClick={handleLogout}

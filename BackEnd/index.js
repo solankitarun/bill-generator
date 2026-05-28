@@ -113,11 +113,15 @@ client.on('auth_failure', msg => {
     waQrCode = null;
 });
 
-client.on('disconnected', (reason) => {
+client.on('disconnected', async (reason) => {
     console.log('WhatsApp Client was logged out', reason);
     waStatus = 'disconnected';
     waQrCode = null;
-    client.initialize();
+    try { await client.destroy(); } catch(e) {}
+    
+    setTimeout(() => {
+        client.initialize().catch(console.error);
+    }, 5000);
 });
 
 client.initialize();
@@ -150,12 +154,12 @@ app.post('/api/whatsapp/logout', async (req, res) => {
                 await client.logout();
             } catch (logoutErr) {
                 console.error('Logout error caught:', logoutErr);
-                try { await client.destroy(); } catch (e) {}
-                client.initialize();
+                client.emit('disconnected', 'Forced logout');
             }
+        } else {
+            // Even if not fully connected, we can still try to reset the state
+            client.emit('disconnected', 'Resetting disconnected state');
         }
-        waStatus = 'disconnected';
-        waQrCode = null;
         res.json({ message: 'Logged out successfully' });
     } catch (err) {
         console.error(err);
@@ -603,9 +607,69 @@ app.post('/api/login', async (req, res) => {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        res.json({ message: 'Login successful', username: user.username, userId: user._id.toString() });
+        res.json({ 
+            message: 'Login successful', 
+            username: user.username, 
+            userId: user._id.toString(),
+            profiles: user.profiles && user.profiles.length > 0 ? user.profiles : ['User']
+        });
     } catch (err) {
         console.error('Login error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// GET /api/users
+app.get('/api/users', async (req, res) => {
+    try {
+        const users = await User.find({}, 'username profiles');
+        res.json(users);
+    } catch (err) {
+        console.error('Fetch users error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// POST /api/users
+app.post('/api/users', async (req, res) => {
+    try {
+        const { username, password, profiles } = req.body;
+        
+        if (!username || !password || !profiles || !Array.isArray(profiles) || profiles.length === 0) {
+            return res.status(400).json({ message: 'Missing username, password, or profiles' });
+        }
+
+        const existingUser = await User.findOne({ username });
+        if (existingUser) {
+            return res.status(400).json({ message: 'Username already exists' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({
+            username,
+            password: hashedPassword,
+            profiles
+        });
+        await newUser.save();
+
+        res.status(201).json({ message: 'User created successfully', username: newUser.username });
+    } catch (err) {
+        console.error('Create user error:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// DELETE /api/users/:id
+app.delete('/api/users/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await User.findByIdAndDelete(id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json({ message: 'User deleted successfully' });
+    } catch (err) {
+        console.error('Delete user error:', err);
         res.status(500).json({ message: 'Server error' });
     }
 });

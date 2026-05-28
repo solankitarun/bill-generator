@@ -12,8 +12,9 @@ import {
     Phone,
     MapPin
 } from 'lucide-react'
+import { FaWhatsapp } from 'react-icons/fa';
 
-export default function BillPreview({ shopDetails, customer, billItems, removeItem, invoiceNum, onReset, onPrint, setAlert, isEditing }) {
+export default function BillPreview({ shopDetails, customer, billItems, removeItem, invoiceNum, onReset, onPrint, setAlert, isEditing, lastAddedId }) {
     const billRef = useRef();
 
     const subtotal = billItems.reduce((acc, item) => acc + item.total, 0)
@@ -54,31 +55,13 @@ export default function BillPreview({ shopDetails, customer, billItems, removeIt
     return (
         <section className="space-y-4 print:block max-h-full overflow-hidden">
             {/* Action Bar */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 print:hidden">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-lg transition-colors">
-                        <Droplets className="w-5 h-5" />
-                    </div>
-                    <div>
-                        <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white transition-colors leading-none tracking-tight uppercase">Bill Preview</h2>
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">{isEditing ? 'Editing Mode' : 'Draft View'}</p>
-                    </div>
+            <div className="flex items-center gap-3 print:hidden">
+                <div className="p-2 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-lg transition-colors">
+                    <Droplets className="w-5 h-5" />
                 </div>
-                <div className="flex items-center gap-2 sm:gap-3">
-                    <button 
-                        onClick={onReset}
-                        className="flex-1 sm:flex-none p-3 rounded-2xl bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 transition-all font-bold text-[10px] uppercase tracking-widest border border-transparent hover:border-rose-500/20"
-                    >
-                        <RotateCcw className="w-4 h-4 mx-auto sm:inline sm:mr-2" />
-                        <span className="hidden sm:inline">Reset</span>
-                    </button>
-                    <button 
-                        onClick={onPrint}
-                        className="flex-[2] sm:flex-none premium-button !py-3 !px-8 text-[10px] uppercase tracking-widest"
-                    >
-                        <Printer className="w-4 h-4" />
-                        Save & Print
-                    </button>
+                <div>
+                    <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white transition-colors leading-none tracking-tight uppercase">Bill Preview</h2>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">{isEditing ? 'Editing Mode' : 'Draft View'}</p>
                 </div>
             </div>
 
@@ -135,46 +118,50 @@ export default function BillPreview({ shopDetails, customer, billItems, removeIt
 
                 {/* Items Table - Desktop Solid Style */}
                 <div className="overflow-x-auto -mx-4 sm:mx-0 mb-6 md:mb-10">
-                    <table className="w-full text-left min-w-[500px] md:min-w-0">
-                        <thead>
-                            <tr className="border-b-2 border-slate-900 dark:border-white/20 transition-colors">
-                                <th className="py-4 text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-widest">Service / Item Description</th>
-                                <th className="py-4 text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-widest text-center">Qty</th>
-                                <th className="py-4 text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-widest text-right">Unit Price</th>
-                                <th className="py-4 text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-widest text-right">Line Total</th>
-                                <th className="py-4 text-center print:hidden"></th>
-                            </tr>
-                        </thead>
+                    {/* Desktop table (visible on sm and up) */}
+
+                        <table className="min-w-full table-fixed hidden sm:block rounded-lg overflow-hidden">
+    <thead>
+        <tr className="border-b-2 border-slate-900 dark:border-white/20 transition-colors">
+            <th className="py-4 px-4 text-[10px] font-black uppercase tracking-widest text-left w-2/5">Service / Item Description</th>
+            <th className="py-4 px-4 text-[10px] font-black uppercase tracking-widest text-center w-1/12">Qty</th>
+            <th className="py-4 px-4 text-[10px] font-black uppercase tracking-widest text-right w-1/6">Unit Price</th>
+            <th className="py-4 px-4 text-[10px] font-black uppercase tracking-widest text-right w-1/6">Line Total</th>
+            <th className="py-4 px-4 text-center print:hidden w-8"></th>
+        </tr>
+    </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-white/5 transition-colors">
                             <AnimatePresence mode='popLayout'>
                                 {billItems.map((item) => (
-                                    <motion.tr 
-                                        key={item.id}
-                                        layout
-                                        initial={{ opacity: 0, y: 5 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, x: 10 }}
-                                        className="group"
-                                    >
-                                        <td className="py-4">
-                                            <p className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-wide">{item.name}</p>
-                                        </td>
-                                        <td className="py-4 text-center text-sm font-bold text-slate-600 dark:text-slate-400">{item.qty}</td>
-                                        <td className="py-4 text-right text-sm font-medium text-slate-600 dark:text-slate-400">₹{item.price.toFixed(2)}</td>
-                                        <td className="py-4 text-right text-sm font-black text-slate-900 dark:text-white">₹{item.total.toFixed(2)}</td>
-                                        <td className="py-4 text-right print:hidden">
-                                            <button 
-                                                onClick={() => removeItem(item.id)}
-                                                className="p-2 text-slate-300 dark:text-slate-600 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                                    <motion.tr key={item.id} layout initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: 10 }} className={`group hover:bg-indigo-50 dark:hover:bg-slate-800/30 transition-colors odd:bg-gray-50 dark:odd:bg-gray-800/20 even:bg-white dark:even:bg-slate-900/10 ${item.id === lastAddedId ? 'bg-emerald-100/30 animate-pulse' : ''}`}>
+                                        <td className="py-4 px-4 w-2/5"><p className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-wide">{item.name}</p></td>
+                                        <td className="py-4 px-4 w-1/12 text-center text-sm font-bold text-slate-600 dark:text-slate-400">{item.qty}</td>
+                                        <td className="py-4 px-4 w-1/6 text-right text-sm font-medium text-slate-600 dark:text-slate-400">₹{item.price.toFixed(2)}</td>
+                                        <td className="py-4 px-4 w-1/6 text-right text-sm font-black text-slate-900 dark:text-white">₹{item.total.toFixed(2)}</td>
+                                        <td className="py-4 px-4 w-8 text-right print:hidden">
+                                            <button onClick={() => removeItem(item.id)} className="p-2 text-slate-300 dark:text-slate-600 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"><Trash2 className="w-4 h-4" /></button>
                                         </td>
                                     </motion.tr>
                                 ))}
                             </AnimatePresence>
                         </tbody>
                     </table>
+                    {/* Mobile list (visible on xs only) */}
+                    <div className="space-y-4 sm:hidden">
+                        {billItems.map((item) => (
+                            <div key={item.id} className="p-4 bg-white dark:bg-slate-900/10 rounded-lg shadow-sm flex flex-col gap-2">
+                                <div className="flex justify-between items-center">
+                                    <span className="font-medium text-slate-900 dark:text-white">{item.name}</span>
+                                    <button onClick={() => removeItem(item.id)} className="p-1 text-slate-300 dark:text-slate-600 hover:text-rose-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                </div>
+                                <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
+                                    <span>Qty: {item.qty}</span>
+                                    <span>₹{item.price.toFixed(2)}</span>
+                                    <span className="font-bold">₹{item.total.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Totals Section */}
@@ -210,24 +197,31 @@ export default function BillPreview({ shopDetails, customer, billItems, removeIt
                 </div>
             </div>
 
-            {/* Actions Bar - ONLY ON MOBILE */}
-            <div className="md:hidden p-4 sm:p-6 flex flex-col sm:flex-row gap-4 bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-3xl transition-colors print:hidden">
-                <button
-                    onClick={handleWhatsApp}
-                    className="flex-1 flex items-center justify-center gap-3 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all py-4 px-6 rounded-2xl font-bold border border-[#25D366]/20 shadow-lg"
-                >
-                    <MessageSquare className="w-5 h-5" />
-                    WhatsApp
-                </button>
-                <button
-                    onClick={onPrint}
-                    className="flex-[1.5] premium-button flex items-center justify-center gap-3 py-4 px-8"
-                >
-                    <Printer className="w-5 h-5" />
-                    {isEditing ? 'Update Bill' : 'Generate Bill'}
-                    <ArrowRight className="w-4 h-4" />
-                </button>
-            </div>
+            {/* Save & Print / Reset Buttons - Below Bill on all screens */}
+            <div className="flex items-center gap-3 print:hidden justify-end">
+    <button
+        onClick={onReset}
+        className="flex items-center gap-2 px-5 py-2 rounded-lg bg-slate-100 dark:bg-gray-800 text-slate-600 dark:text-slate-300 hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 transition-all font-bold text-[10px] uppercase tracking-widest border border-transparent hover:border-rose-500/20"
+    >
+        <RotateCcw className="w-4 h-4" />
+        Reset
+    </button>
+    <button
+        onClick={handleWhatsApp}
+        aria-label="WhatsApp"
+        className="flex items-center justify-center px-4 py-2 rounded-lg bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all font-bold text-[10px] uppercase tracking-widest border border-[#25D366]/20"
+    >
+                <FaWhatsapp className="w-4 h-4" />
+    </button>
+    <button
+        onClick={onPrint}
+        aria-label="Print"
+        className="flex items-center justify-center px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-all font-bold text-[10px] uppercase tracking-widest gap-2"
+    >
+        <Printer className="w-4 h-4" />
+        <span className="ml-1">{isEditing ? 'Update' : 'Save'}</span>
+    </button>
+</div>
         </section>
     )
 }
