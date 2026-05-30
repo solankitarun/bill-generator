@@ -79,12 +79,8 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
-        executablePath: process.env.NODE_ENV === 'production'
-            ? process.env.PUPPETEER_EXECUTABLE_PATH || (
-                fs.existsSync('/usr/bin/google-chrome-stable') ? '/usr/bin/google-chrome-stable' :
-                fs.existsSync('/usr/bin/google-chrome') ? '/usr/bin/google-chrome' :
-                '/usr/bin/chromium'
-            )
+        executablePath: process.env.RENDER || process.env.NODE_ENV === 'production'
+            ? require('puppeteer').executablePath()
             : undefined,
         args: [
             '--no-sandbox',
