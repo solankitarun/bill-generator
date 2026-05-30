@@ -79,6 +79,9 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
+        executablePath: process.env.NODE_ENV === 'production' 
+            ? process.env.PUPPETEER_EXECUTABLE_PATH || (process.env.PUPPETEER_CACHE_DIR ? require('puppeteer').executablePath() : require('puppeteer').executablePath())
+            : require('puppeteer').executablePath(),
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
