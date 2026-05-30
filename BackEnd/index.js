@@ -89,45 +89,63 @@ const client = new Client({
             '--disable-accelerated-2d-canvas',
             '--no-first-run',
             '--no-zygote',
-            '--single-process',
-            '--disable-gpu'
+            // NOTE: --single-process is intentionally removed.
+            // It causes Chrome's IPC to crash during WhatsApp's auth handshake,
+            // preventing the 'ready' and 'authenticated' events from firing.
+            '--disable-gpu',
+            '--disable-software-rasterizer',
+            '--disable-extensions',
+            '--disable-background-networking',
+            '--disable-default-apps',
+            '--mute-audio'
         ]
     },
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
 });
 
 client.on('qr', (qr) => {
-    console.log('WhatsApp QR code generated (Scan in Shop Master module).');
+    console.log('[WA] QR code generated. Waiting for scan...');
     waStatus = 'pairing';
     waQrCode = qr;
 });
 
-client.on('ready', () => {
-    console.log('WhatsApp Client is ready!');
+client.on('loading_screen', (percent, message) => {
+    console.log(`[WA] Loading: ${percent}% - ${message}`);
+    // QR was scanned — mark as connecting so UI can update
+    if (waStatus === 'pairing') {
+        waStatus = 'connecting';
+        waQrCode = null;
+        console.log('[WA] QR scanned! Waiting for WhatsApp to complete login...');
+    }
+});
+
+client.on('authenticated', () => {
+    console.log('[WA] Authenticated successfully!');
     waStatus = 'connected';
     waQrCode = null;
 });
 
-client.on('authenticated', () => {
-    console.log('WhatsApp Authenticated!');
+client.on('ready', () => {
+    console.log('[WA] Client is ready! Messages can now be sent.');
     waStatus = 'connected';
     waQrCode = null;
 });
 
 client.on('auth_failure', msg => {
-    console.error('WhatsApp Auth failure', msg);
+    console.error('[WA] Auth failure:', msg);
     waStatus = 'disconnected';
     waQrCode = null;
 });
 
 client.on('disconnected', async (reason) => {
-    console.log('WhatsApp Client was logged out', reason);
+    console.log('[WA] Client disconnected:', reason);
     waStatus = 'disconnected';
     waQrCode = null;
     try { await client.destroy(); } catch(e) {}
     
     setTimeout(() => {
-        client.initialize().catch(console.error);
+        console.log('[WA] Reinitializing client...');
+        client.initialize().catch(err => console.error('[WA] Reinit error:', err));
     }, 5000);
 });
 

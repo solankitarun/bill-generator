@@ -232,6 +232,17 @@ const handleSubmit = async (e) => {
                                     Scan QR code using WhatsApp to connect.
                                 </p>
                             </div>
+                        ) : waStatus === 'connecting' ? (
+                            <div className="flex flex-col items-center w-full animate-in fade-in duration-300">
+                                <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mb-5 relative">
+                                    <div className="absolute inset-0 bg-amber-500/20 rounded-full animate-ping"></div>
+                                    <div className="w-10 h-10 border-4 border-amber-500/30 border-t-amber-500 rounded-full animate-spin relative z-10"></div>
+                                </div>
+                                <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2">Connecting...</h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 text-center px-2">
+                                    QR scanned! Establishing secure session with WhatsApp.
+                                </p>
+                            </div>
                         ) : waStatus === 'connected' ? (
                             <div className="flex flex-col items-center w-full animate-in fade-in duration-300">
                                 <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mb-5 relative">
