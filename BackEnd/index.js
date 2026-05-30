@@ -79,9 +79,13 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
-        executablePath: process.env.NODE_ENV === 'production' 
-            ? process.env.PUPPETEER_EXECUTABLE_PATH || (process.env.PUPPETEER_CACHE_DIR ? require('puppeteer').executablePath() : require('puppeteer').executablePath())
-            : require('puppeteer').executablePath(),
+        executablePath: process.env.NODE_ENV === 'production'
+            ? process.env.PUPPETEER_EXECUTABLE_PATH || (
+                fs.existsSync('/usr/bin/google-chrome-stable') ? '/usr/bin/google-chrome-stable' :
+                fs.existsSync('/usr/bin/google-chrome') ? '/usr/bin/google-chrome' :
+                '/usr/bin/chromium'
+            )
+            : undefined,
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
