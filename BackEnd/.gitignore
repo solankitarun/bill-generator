@@ -4,3 +4,4 @@ uploads/
 .wwebjs_auth/
 .wwebjs_cache/
 .DS_Store
+.puppeteer-cache/

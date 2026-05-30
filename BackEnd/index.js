@@ -80,7 +80,7 @@ const client = new Client({
     puppeteer: {
         headless: true,
         executablePath: process.env.RENDER
-            ? (fs.existsSync('/usr/bin/google-chrome-stable') ? '/usr/bin/google-chrome-stable' : (fs.existsSync('/usr/bin/google-chrome') ? '/usr/bin/google-chrome' : '/usr/bin/chromium'))
+            ? require('puppeteer').executablePath()
             : undefined,
         args: [
             '--no-sandbox',
