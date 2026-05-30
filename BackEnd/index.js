@@ -151,6 +151,10 @@ app.get('/', (req, res) => {
 
 // WhatsApp endpoints
 app.get('/api/whatsapp/status', (req, res) => {
+    // Disable all caching so the frontend always gets fresh status
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     res.json({ status: waStatus, qr: waQrCode });
 });
 
@@ -403,7 +407,8 @@ app.post('/api/upload-pdf', async (req, res) => {
             console.log(`PDF Archived to: ${archivePath}`);
         }
 
-        if (client.info && customerPhone) {
+        // Use waStatus as primary check (client.info can be unreliable in container environments)
+        if ((waStatus === 'connected') && customerPhone) {
             try {
                 const formattedPhone = (process.env.WHATSAPP_COUNTRY_CODE || '91') + customerPhone.replace(/\D/g, '');
                 const chatId = `${formattedPhone}@c.us`;
@@ -429,8 +434,8 @@ app.post('/api/upload-pdf', async (req, res) => {
             } catch (wsErr) {
                 console.error('Error sending WhatsApp:', wsErr.message);
             }
-        } else if (!client.info) {
-            console.log('WhatsApp client not ready. Message skipped.');
+        } else if (waStatus !== 'connected') {
+            console.log(`WhatsApp not ready (status: ${waStatus}). Message skipped.`);
         }
 
         const protocol = req.protocol;
