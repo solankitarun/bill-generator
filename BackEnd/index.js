@@ -85,19 +85,37 @@ const client = new Client({
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
+            '--disable-dev-shm-usage',       // Use disk instead of /dev/shm
             '--disable-accelerated-2d-canvas',
             '--no-first-run',
             '--no-zygote',
-            // NOTE: --single-process is intentionally removed.
-            // It causes Chrome's IPC to crash during WhatsApp's auth handshake,
-            // preventing the 'ready' and 'authenticated' events from firing.
             '--disable-gpu',
             '--disable-software-rasterizer',
             '--disable-extensions',
             '--disable-background-networking',
+            '--disable-background-timer-throttling',
+            '--disable-backgrounding-occluded-windows',
+            '--disable-breakpad',            // Disable crash reporter (saves RAM)
+            '--disable-client-side-phishing-detection',
+            '--disable-component-update',
             '--disable-default-apps',
-            '--mute-audio'
+            '--disable-domain-reliability',
+            '--disable-features=AudioServiceOutOfProcess',
+            '--disable-hang-monitor',
+            '--disable-ipc-flooding-protection',
+            '--disable-notifications',
+            '--disable-offer-store-unmasked-wallet-cards',
+            '--disable-popup-blocking',
+            '--disable-print-preview',
+            '--disable-prompt-on-repost',
+            '--disable-renderer-backgrounding',
+            '--disable-sync',
+            '--disable-translate',
+            '--metrics-recording-only',
+            '--mute-audio',
+            '--no-default-browser-check',
+            '--safebrowsing-disable-auto-update',
+            '--js-flags=--max-old-space-size=256' // Cap Chrome V8 heap to 256MB
         ]
     },
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'

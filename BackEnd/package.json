@@ -4,7 +4,7 @@
     "description": "Backend API for Laundry Bill Generator with MongoDB",
     "main": "index.js",
     "scripts": {
-        "start": "node index.js",
+        "start": "node --max-old-space-size=256 index.js",
         "dev": "nodemon index.js",
         "postinstall": "npx puppeteer browsers install chrome"
     },
